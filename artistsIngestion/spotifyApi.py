@@ -1,66 +1,34 @@
 import base64, json, requests, os
+from django.conf import settings
 
-class SpotifyAuth(object):
-    SPOTIFY_URL_AUTH = "https://accounts.spotify.com/authorize/"
-    SPOTIFY_URL_TOKEN = "https://accounts.spotify.com/api/token/"
-    RESPONSE_TYPE = "code"
-    HEADER = "application/x-www-form-urlencoded"
-    CLIENT_ID = os.environ.get("CLIENT_ID")
-    CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
-    CALLBACK_URL = "http://localhost:5000/auth"
-    SCOPE = "user-read-email user-read-private"
+SPOTIFY_URL_TOKEN = "https://accounts.spotify.com/api/token/"
+SPOTIFY_URL_NEW_RELEASE = "https://api.spotify.com/v1/browse/new-releases"
+SPOTIFY_ARTIST_URL = "https://api.spotify.com/v1/artists/"
+HEADER = "application/x-www-form-urlencoded"
+CLIENT_ID = settings.SPOTIFY_CLIENT_ID
+CLIENT_SECRET = settings.SPOTIFY_CLIENT_SECRET
 
-    def getAuth(self, client_id, redirect_uri, scope):
-        return (
-            f"{self.SPOTIFY_URL_AUTH}"
-            f"?client_id={client_id}"
-            f"&redirect_uri={redirect_uri}"
-            f"&scope={scope}"
-            "&response_type=code"
-        )
+class SpotifyApi(object):
 
-    def getToken(self, code, client_id, client_secret, redirect_uri):
-        body = {
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": redirect_uri,
-            "client_id": client_id,
-            "client_secret": client_secret,
-        }
+    def __init__(self):
+        self.token = self._getToken()
 
-        encoded = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
-        headers = {
-            "Content-Type": self.HEADER,
-            "Authorization": f"Basic {encoded}",
-        }
+    def _getToken(self):
+        auth_response = requests.post(SPOTIFY_URL_TOKEN, {
+            'grant_type': 'client_credentials',
+            'client_id': CLIENT_ID,
+            'client_secret': CLIENT_SECRET,
+        })
 
-        post = requests.post(self.SPOTIFY_URL_TOKEN, params=body, headers=headers)
-        return self.handleToken(json.loads(post.text))
+        return auth_response.json()['access_token']
 
-    def handleToken(self, response):
-        if "error" in response:
-            return response
-        return {
-            key: response[key]
-            for key in ["access_token", "expires_in", "refresh_token"]
-        }
+    def get_new_release(self):
+        new_releases = requests.get(SPOTIFY_URL_NEW_RELEASE, headers=self._headers())
+        return new_releases.json()
 
-    def refreshAuth(self, refresh_token):
-        body = {"grant_type": "refresh_token", "refresh_token": refresh_token}
+    def get_artist(self, spotify_artist_id):
+        artist = requests.get(SPOTIFY_ARTIST_URL + spotify_artist_id, headers=self._headers())
+        return artist.json()
 
-        post_refresh = requests.post(
-            self.SPOTIFY_URL_TOKEN, data=body, headers=self.HEADER
-        )
-        p_back = json.dumps(post_refresh.text)
-
-        return self.handleToken(p_back)
-
-    def getUser(self):
-        return self.getAuth(
-            self.CLIENT_ID, f"{self.CALLBACK_URL}/callback", self.SCOPE,
-        )
-
-    def getUserToken(self, code):
-        return self.getToken(
-            code, self.CLIENT_ID, self.CLIENT_SECRET, f"{self.CALLBACK_URL}/callback"
-        )
+    def _headers(self):
+        return { 'Authorization': 'Bearer {token}'.format(token=self.token) }
