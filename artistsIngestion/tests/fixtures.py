@@ -42,7 +42,10 @@ def artist_from_spotify():
 
 @pytest.fixture
 def news_release_from_spotify():
-    return [{ "artists": [{"id" : "0OdUWJ0sBjDrqHygGUXeCF", "name": "Band of Horses"}], "name": "Some Name", "release_date": datetime.now(timezone.utc)}]
+    return [{
+              "artists": [{"id" : "0OdUWJ0sBjDrqHygGUXeCF", "name": "Band of Horses"}],
+              "name": "Some Name", "release_date": datetime.now(timezone.utc)
+            }]
 
 @pytest.fixture
 def band_of_horses_artist(db):
