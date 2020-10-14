@@ -4,5 +4,5 @@ from artistsIngestion import ingester
 
 def start():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(ingester.place_holder, 'interval', minutes=1)
+    scheduler.add_job(ingester.update_artists, 'interval', minutes=1)
     scheduler.start()

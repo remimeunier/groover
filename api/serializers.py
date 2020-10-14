@@ -6,4 +6,4 @@ from .models import Artist
 class ArtistSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Artist
-        fields = ('name',)
+        fields = ('name', 'last_release_name', 'last_release_date', 'spotify_link')

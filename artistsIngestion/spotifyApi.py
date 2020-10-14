@@ -24,7 +24,7 @@ class SpotifyApi(object):
 
     def get_new_release(self):
         new_releases = requests.get(SPOTIFY_URL_NEW_RELEASE, headers=self._headers())
-        return new_releases.json()
+        return new_releases.json()['albums']['items']
 
     def get_artist(self, spotify_artist_id):
         artist = requests.get(SPOTIFY_ARTIST_URL + spotify_artist_id, headers=self._headers())
