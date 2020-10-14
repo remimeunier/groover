@@ -1,5 +1,5 @@
 from api.models import Artist, Genre
-from artistsIngestion.spotifyApi import SpotifyApi
+from artistsIngestion.spotify import SpotifyApi
 
 class Reached(Exception): pass
 
@@ -35,5 +35,5 @@ def update_artists():
                     a.genres.set(genres_artist)
                     a.save()
     except Reached:
-      pass # Stop everything if we reached an already ingested release
+        print("reached")# Stop everything if we reached an already ingested release
 
