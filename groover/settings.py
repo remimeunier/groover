@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
     'artistsIngestion',
+    'spotifyAuth',
     'rest_framework',
 ]
 

@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-from .views import ArtistList, SpotifyAuthView
+from .views import ArtistList
 
 
 urlpatterns = [

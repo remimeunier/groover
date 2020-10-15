@@ -1,10 +1,10 @@
 from django.shortcuts import redirect
 from rest_framework import generics
-from rest_framework.views import APIView
 
-from .models import Artist, SpotifyAuth
+from spotifyAuth.models import SpotifyAuth
+from spotifyAuth.spotifyAuthApi import SpotifyAuthApi
+from .models import Artist
 from .serializers import ArtistSerializer
-from artistsIngestion.spotifyAuth import SpotifyAuthApi
 
 class ArtistList(generics.ListAPIView):
     queryset = Artist.objects.order_by('-last_release_date').all()
@@ -14,11 +14,5 @@ class ArtistList(generics.ListAPIView):
         if SpotifyAuth.objects.all().first():
             return super().list(request)
         else:
+            # redirect to the spotify auth page
             return redirect(SpotifyAuthApi().getUser())
-
-
-class SpotifyAuthView(APIView):
-
-    def get(self, request):
-        print(request)
-

@@ -17,7 +17,3 @@ class Artist(models.Model):
 
     def __str__(self):
         return self.name
-
-class SpotifyAuth(models.Model):
-    token = models.TextField()
-    refresh_roken = models.TextField()

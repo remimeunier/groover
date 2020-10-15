@@ -3,6 +3,7 @@ import pytest
 from datetime import datetime, timezone, timedelta
 
 from api.models import Artist, Genre
+from spotifyAuth.models import SpotifyAuth
 
 @pytest.fixture
 def artists_with_genre(db):
@@ -25,3 +26,11 @@ def artists_with_genre(db):
     a1.save()
     a2.save()
     return [a1, a2]
+
+
+@pytest.fixture
+def dummy_auth(db):
+    spotify_auth = SpotifyAuth(token="something", refresh_token="refresh something")
+    spotify_auth.save()
+    return spotify_auth
+

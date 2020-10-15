@@ -5,4 +5,4 @@
 - Create an .env file with the secrets (see the enxemple)
 - Change Database access if needed
 - Migrate
-- Start server this way : `python manage.py runserver --noreload`
+- Start server this way : `python manage.py runserver 5000 --noreload`

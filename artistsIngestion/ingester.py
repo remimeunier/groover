@@ -1,10 +1,18 @@
 from api.models import Artist, Genre
-from artistsIngestion.spotify import SpotifyApi
+from artistsIngestion.spotifyApi import SpotifyApi, SpotifyErrorMessage
+from spotifyAuth.models import SpotifyAuth
+from spotifyAuth.spotifyAuthApi import ErrorWhileGettingToken
+
 
 class Reached(Exception): pass
 
 def update_artists():
-    spotify = SpotifyApi()
+    auth = SpotifyAuth.objects.all().first()
+    if auth is None:
+        print('No Auth saved')
+        return
+
+    spotify = SpotifyApi(auth=auth)
     try:
         # Fetch all new releases from spotify and iterate
         for release in spotify.get_new_release():
@@ -35,5 +43,9 @@ def update_artists():
                     a.genres.set(genres_artist)
                     a.save()
     except Reached:
-        print("reached")# Stop everything if we reached an already ingested release
+        print("reached") # Stop everything if we reached an already ingested release
+    except ErrorWhileGettingToken:
+        print('Something went wrong with spotify')
+    except SpotifyErrorMessage:
+        print('Something went wrong whith spotify')
 

@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 from api.models import Artist, Genre
+from api.tests.fixtures import dummy_auth
 from artistsIngestion import ingester
 from artistsIngestion.ingester import Reached
 from artistsIngestion.tests.fixtures import (
@@ -14,29 +15,34 @@ from artistsIngestion.tests.fixtures import (
 class TestIngester:
 
     @pytest.mark.django_db
-    def test_update_artists(self, capfd, news_release_from_spotify, artist_from_spotify):
+    def test_update_artists(self, capfd, news_release_from_spotify, artist_from_spotify, dummy_auth):
         mock_API = Mock()
         mock_API.get_new_release.return_value = news_release_from_spotify
         mock_API.get_artist.return_value = artist_from_spotify
-        with patch('artistsIngestion.spotify.SpotifyApi.__new__', return_value=mock_API):
+        with patch('artistsIngestion.spotifyApi.SpotifyApi.__new__', return_value=mock_API):
             ingester.update_artists()
         assert Artist.objects.filter(name="Band of Horses").exists()
         assert Genre.objects.filter(name="indie pop").exists()
         assert Genre.objects.filter(name="indie folk").exists()
-        with patch('artistsIngestion.spotify.SpotifyApi.__new__', return_value=mock_API):
+        with patch('artistsIngestion.spotifyApi.SpotifyApi.__new__', return_value=mock_API):
             ingester.update_artists()
         out, err = capfd.readouterr()
         assert out == "reached\n"
 
     @pytest.mark.django_db
     def test_update_artists_last_release(self, news_release_from_spotify, artist_from_spotify,
-                                         band_of_horses_artist):
+                                         band_of_horses_artist, dummy_auth):
         last_release_name = band_of_horses_artist.last_release_name
         mock_API = Mock()
         mock_API.get_new_release.return_value = news_release_from_spotify
         mock_API.get_artist.return_value = artist_from_spotify
-        with patch('artistsIngestion.spotify.SpotifyApi.__new__', return_value=mock_API):
+        with patch('artistsIngestion.spotifyApi.SpotifyApi.__new__', return_value=mock_API):
             ingester.update_artists()
         a = Artist.objects.filter(name="Band of Horses").first()
         assert a.last_release_name != last_release_name
 
+    @pytest.mark.django_db
+    def test_update_artists_no_auth(self, capfd):
+        ingester.update_artists()
+        out, err = capfd.readouterr()
+        assert out == "No Auth saved\n"
